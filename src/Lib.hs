@@ -48,8 +48,8 @@ shlackbot = do
           let evt = Event msg uid cid c
           let response = OutputResponse outgoing evt NoMessage
           liftIO $ atomically $ writeTChan incoming (evt, response)
-        Nothing -> return ()
-    _ -> return ()
+        Nothing -> pure ()
+    _ -> pure ()
 
 runPlugin :: TChan (Event, OutputResponse) -> ((Event, OutputResponse) -> IO ()) -> IO ThreadId
 runPlugin chan f = do
@@ -70,9 +70,9 @@ publishMessage resp = do
   case (message resp) of
     SimpleMessage txt -> slackSendMsg cid txt []
     RichMessage rmsg  -> slackSendMsg cid "" [rmsg]
-    NoMessage         -> return ()
+    NoMessage         -> pure ()
 
 slackSendMsg :: ChannelId -> T.Text -> [Attachment] -> Slack ()
 slackSendMsg cid msg att = do
   send <- sendRichMessage cid msg att
-  either (liftIO . putStrLn . T.unpack) return send
+  either (liftIO . putStrLn . T.unpack) pure send

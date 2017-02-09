@@ -29,7 +29,7 @@ envWarn :: String -> IO String
 envWarn var = do
   getVar <- lookupEnv var
   unless (isJust getVar) $ print failureStr
-  return $ fromMaybe failureStr getVar
+  pure $ fromMaybe failureStr getVar
   where failureStr = var ++ " not set"
 
 envMaybe :: String -> IO (Maybe String)
@@ -39,7 +39,7 @@ envGuard :: String -> IO String
 envGuard var = do
   getVar <- lookupEnv var
   guard $ isJust getVar
-  return $ fromJust getVar
+  pure $ fromJust getVar
 
 envDefault :: String -> String -> IO String
 envDefault def var = fromMaybe def <$> lookupEnv var
@@ -51,10 +51,10 @@ safeGetUrl url (Just login) (Just pass) = do
   (Right <$> getWith opts (unpack url)) `E.catch` handler
   where
     handler :: HttpException -> IO (Either Text (Response LBS.ByteString))
-    handler _ = return $ Left $ pack "Error fetching HTTP data."
+    handler _ = pure $ Left $ pack "Error fetching HTTP data."
     -- handler (StatusCodeException s _ _) = do
-    --   return $ Left $ BSC.unpack (s ^. statusMessage)
-safeGetUrl _ _ _ = return $ Left $ pack "Error: Invalid invocation."
+    --   pure $ Left $ BSC.unpack (s ^. statusMessage)
+safeGetUrl _ _ _ = pure $ Left $ pack "Error: Invalid invocation."
 
 slackWriter :: OutputResponse -> OutputMessage -> IO ()
 slackWriter resp msg = atomically $ writeTChan (outputChannel resp) resp { message = msg }

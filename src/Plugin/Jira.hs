@@ -56,7 +56,7 @@ help :: (T.Event, OutputResponse) -> IO ()
 help (evt, resp) = case (args $ command evt) of
   []       -> say
   ["jira"] -> say
-  _        -> return ()
+  _        -> pure ()
   where say = slackWriter resp $ SimpleMessage "`!jira AB-123 [AB-234 AB-345…] :: Displays Jira entries`"
 
 fetchIssues :: (T.Event, OutputResponse) -> IO ()

@@ -25,6 +25,7 @@ data Issue = Issue { issueKey     :: Text
                    , assigneeName :: Maybe Text
                    , creatorName  :: Maybe Text
                    , issueUrl     :: Maybe Text
+                   , commentCount :: Maybe Integer
                    } deriving Show
 
 instance FromJSON Issue where
@@ -41,6 +42,7 @@ instance FromJSON Issue where
     issueStatus  <- optional $ fields >>= (.: "status") >>= (.: "name")
     assigneeName <- optional $ fields >>= (.: "assignee") >>= (.: "displayName")
     creatorName  <- optional $ fields >>= (.: "creator") >>= (.: "displayName")
+    commentCount <- optional $ fields >>= (.: "comment") >>= (.: "total")
     let issueUrl  = Nothing
     pure Issue{..}
   parseJSON _ = mempty
@@ -108,6 +110,7 @@ showIssue issue = RichMessage defaultAttachment
                                    , makeField "Assigned to" (assigneeName issue)
                                    ]
     , attachmentThumbUrl = Just "https://a.slack-edge.com/2fac/plugins/jira/assets/service_36.png"
+    , attachmentFooter = Just $ Data.Text.concat ["Comments: ", pack . show $ (fromMaybe 0 $ commentCount issue)]
     }
   where
     color = case (priorityName issue) of

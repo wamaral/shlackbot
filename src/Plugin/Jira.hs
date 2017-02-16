@@ -12,7 +12,6 @@ import           Data.Text           hiding (head, map)
 import           Network.HTTP.Types
 import           Network.Wreq
 import           Types
-import qualified Types               as T
 import           Util
 import           Web.Slack
 
@@ -47,21 +46,21 @@ instance FromJSON Issue where
     pure Issue{..}
   parseJSON _ = mempty
 
-respond :: (T.Event, OutputResponse) -> IO ()
+respond :: BotAction
 respond (evt, resp) = do
   case (trigger $ command evt) of
     "jira" -> fetchIssues (evt, resp)
     "help" -> help (evt, resp)
     _      -> pure ()
 
-help :: (T.Event, OutputResponse) -> IO ()
+help :: BotAction
 help (evt, resp) = case (args $ command evt) of
   []       -> say
   ["jira"] -> say
   _        -> pure ()
   where say = slackWriter resp $ SimpleMessage "`!jira AB-123 [AB-234 AB-345…] :: Displays Jira entries`"
 
-fetchIssues :: (T.Event, OutputResponse) -> IO ()
+fetchIssues :: BotAction
 fetchIssues (evt, resp) = mapM_ (fetchIssue resp) (args $ command evt)
 
 fetchIssue :: OutputResponse -> Text -> IO ()

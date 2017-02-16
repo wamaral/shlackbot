@@ -51,7 +51,7 @@ slaskellbot = do
         Nothing -> pure ()
     _ -> pure ()
 
-runPlugin :: TChan (Event, OutputResponse) -> ((Event, OutputResponse) -> IO ()) -> IO ThreadId
+runPlugin :: TChan BotInput -> BotAction -> IO ThreadId
 runPlugin chan f = do
   myChan <- atomically $ dupTChan chan
   forkIO $ forever $ do

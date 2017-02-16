@@ -29,3 +29,6 @@ data OutputResponse = OutputResponse { outputChannel :: TChan OutputResponse
                                      , event         :: Event
                                      , message       :: OutputMessage
                                      }
+
+type BotInput = (Event, OutputResponse)
+type BotAction = BotInput -> IO ()

@@ -9,7 +9,7 @@ For more information on how to write Haddock comments check the user guide:
 <https://www.haskell.org/haddock/doc/html/index.html>
 -}
 module Lib
-    ( shlackbot
+    ( slaskellbot
     ) where
 
 import           Control.Concurrent
@@ -28,8 +28,8 @@ import           Web.Slack.Monad        (monadicToHandled)
 pluginHandlers :: [(Event, OutputResponse) -> IO ()]
 pluginHandlers = [ Jira.respond ]
 
-shlackbot :: Slack ()
-shlackbot = do
+slaskellbot :: Slack ()
+slaskellbot = do
   me <- _selfUserId . _slackSelf <$> getSession
   conf <- getConfig
 

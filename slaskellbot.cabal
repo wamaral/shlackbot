@@ -1,8 +1,8 @@
-name:                shlackbot
+name:                slaskellbot
 version:             0.1.0.0
 synopsis:            Initial project template from stack
 description:         Please see README.md
-homepage:            https://github.com/shlackbot/shlackbot#readme
+homepage:            https://github.com/slaskellbot/slaskellbot#readme
 license:             BSD3
 license-file:        LICENSE
 author:              Wagner Amaral
@@ -44,26 +44,26 @@ library
                      , FlexibleContexts
                      , FlexibleInstances
 
-executable shlackbot-exe
+executable slaskellbot-exe
   hs-source-dirs:      app
   main-is:             Main.hs
   ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
-                     , shlackbot
+                     , slaskellbot
                      , slack-api
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
 
-test-suite shlackbot-test
+test-suite slaskellbot-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
   build-depends:       base
-                     , shlackbot
+                     , slaskellbot
   ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
 
 source-repository head
   type:     git
-  location: https://github.com/wamaral/shlackbot
+  location: https://github.com/wamaral/slaskellbot

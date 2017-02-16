@@ -1,3 +1,3 @@
-# shlackbot
+# slaskellbot
 
-add description of shlackbot here
+add description of slaskellbot here

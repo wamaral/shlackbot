@@ -6,11 +6,13 @@ import           Control.Applicative
 import           Control.Lens
 import           Data.Aeson
 import           Data.Maybe
-import           Data.Text           hiding (head, map)
+import           Data.Text            hiding (filter, head, map)
 -- import           Data.Text.Lazy          (toStrict)
 -- import           Data.Text.Lazy.Encoding
 import           Network.HTTP.Types
 import           Network.Wreq
+import           Text.Megaparsec      hiding (label)
+import           Text.Megaparsec.Text
 import           Types
 import           Util
 import           Web.Slack
@@ -58,10 +60,16 @@ help (evt, resp) = case (args $ command evt) of
   []       -> say
   ["jira"] -> say
   _        -> pure ()
-  where say = slackWriter resp $ SimpleMessage "`!jira AB-123 [AB-234 AB-345…] :: Displays Jira entries`"
+  where say = slackWriter resp $ SimpleMessage "`!jira XYZ-123 [XYZ-234 XYZ-345…] :: Displays Jira entries`"
+
+isIssueKey :: Text -> Bool
+isIssueKey = isJust . parseMaybe issueKeyParser
+  where
+    issueKeyParser :: Parser String
+    issueKeyParser = some letterChar >> char '-' >> some numberChar
 
 fetchIssues :: BotAction
-fetchIssues (evt, resp) = mapM_ (fetchIssue resp) (args $ command evt)
+fetchIssues (evt, resp) = mapM_ (fetchIssue resp) $ filter isIssueKey (args $ command evt)
 
 fetchIssue :: OutputResponse -> Text -> IO ()
 fetchIssue resp issueName = do

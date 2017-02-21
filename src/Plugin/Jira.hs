@@ -5,6 +5,7 @@ module Plugin.Jira where
 import           Control.Applicative
 import           Control.Lens
 import           Data.Aeson
+import           Data.List            (nub)
 import           Data.Maybe
 import           Data.Text            hiding (filter, head, map)
 -- import           Data.Text.Lazy          (toStrict)
@@ -69,7 +70,7 @@ isIssueKey = isJust . parseMaybe issueKeyParser
     issueKeyParser = some letterChar >> char '-' >> some numberChar
 
 fetchIssues :: BotAction
-fetchIssues (evt, resp) = mapM_ (fetchIssue resp) $ filter isIssueKey (args $ command evt)
+fetchIssues (evt, resp) = mapM_ (fetchIssue resp) $ nub $ map toUpper $ filter isIssueKey (args $ command evt)
 
 fetchIssue :: OutputResponse -> Text -> IO ()
 fetchIssue resp issueName = do

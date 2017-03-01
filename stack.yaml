@@ -4,7 +4,7 @@ packages:
 - location: '.'
 - location:
     git: git@github.com:wamaral/slack-api.git
-    commit: 9c5fffec88723a51099ed77bf80858817596c717
+    commit: 15f0acb607e67e43670f0f5d5c73eb5b47556be7
 extra-deps:
 - datetime-0.3.1
 - wreq-0.5.0.0

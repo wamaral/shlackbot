@@ -16,6 +16,7 @@ import           Control.Concurrent
 import           Control.Concurrent.STM
 import           Control.Monad
 import           Control.Monad.IO.Class
+import           Data.Maybe             (isJust)
 import qualified Data.Text              as T
 import           Parser                 as P
 import qualified Plugin.Jira            as Jira
@@ -25,33 +26,38 @@ import           Web.Slack              hiding (Event)
 import           Web.Slack.Handle       (SlackHandle, withSlackHandle)
 import           Web.Slack.Monad        (monadicToHandled)
 
-pluginHandlers :: [(Event, OutputResponse) -> IO ()]
+pluginHandlers :: [BotResponse]
 pluginHandlers = [ Jira.respond ]
+
+pluginListeners :: [BotResponse]
+pluginListeners = [ Jira.hear ]
 
 slaskellbot :: Slack ()
 slaskellbot = do
   me <- _selfUserId . _slackSelf <$> getSession
   conf <- getConfig
 
-  incoming <- liftIO $ atomically newBroadcastTChan
+  incomingCommand <- liftIO $ atomically newBroadcastTChan
+  incomingListen <- liftIO $ atomically newBroadcastTChan
   outgoing <- liftIO $ atomically newTChan
 
-  _ <- mapM (liftIO . runPlugin incoming) pluginHandlers
+  _ <- mapM (liftIO . runPlugin incomingCommand) pluginHandlers
+  _ <- mapM (liftIO . runPlugin incomingListen) pluginListeners
   _ <- liftIO $ withSlackHandle conf $ relayMessage outgoing
 
   forever $ getNextEvent >>= \case
     Message cid (UserComment uid) msg _ _ _ | uid /= me -> do
       let parsedCmd = parseMaybe P.commandParser msg
       case parsedCmd of
-        Just c -> do
-          liftIO $ print c
-          let evt = Event msg uid cid c
-          let response = OutputResponse outgoing evt NoMessage
-          liftIO $ atomically $ writeTChan incoming (evt, response)
+        Just c  -> liftIO $ print c
         Nothing -> pure ()
+      let evt = Event msg uid cid parsedCmd
+      let response = OutputResponse outgoing evt NoMessage
+      let chan = if isJust parsedCmd then incomingCommand else incomingListen
+      liftIO $ atomically $ writeTChan chan (evt, response)
     _ -> pure ()
 
-runPlugin :: TChan BotInput -> BotAction -> IO ThreadId
+runPlugin :: TChan BotInput -> BotResponse -> IO ThreadId
 runPlugin chan f = do
   myChan <- atomically $ dupTChan chan
   forkIO $ forever $ do
@@ -68,9 +74,10 @@ publishMessage :: OutputResponse -> Slack ()
 publishMessage resp = do
   let cid = channel $ event resp
   case (message resp) of
-    SimpleMessage txt -> slackSendMsg cid txt []
-    RichMessage rmsg  -> slackSendMsg cid "" [rmsg]
-    NoMessage         -> pure ()
+    SimpleMessage txt       -> slackSendMsg cid txt []
+    QuotedSimpleMessage txt -> slackSendMsg cid (T.concat ["`", txt, "`"]) []
+    RichMessage rmsg        -> slackSendMsg cid "" [rmsg]
+    NoMessage               -> pure ()
 
 slackSendMsg :: ChannelId -> T.Text -> [Attachment] -> Slack ()
 slackSendMsg cid msg att = do

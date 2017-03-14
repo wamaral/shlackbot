@@ -12,7 +12,7 @@ import           Control.Concurrent.STM
 import           Data.Text
 import           Web.Slack              hiding (Event)
 
-data OutputMessage = SimpleMessage Text | RichMessage Attachment | NoMessage
+data OutputMessage = SimpleMessage Text | QuotedSimpleMessage Text | RichMessage Attachment | NoMessage
 
 data Command = Command { prefix  :: Char
                        , trigger :: Text
@@ -22,7 +22,7 @@ data Command = Command { prefix  :: Char
 data Event = Event { fullMessage :: Text
                    , user        :: UserId
                    , channel     :: ChannelId
-                   , command     :: Command
+                   , command     :: Maybe Command
                    }
 
 data OutputResponse = OutputResponse { outputChannel :: TChan OutputResponse
@@ -31,4 +31,4 @@ data OutputResponse = OutputResponse { outputChannel :: TChan OutputResponse
                                      }
 
 type BotInput = (Event, OutputResponse)
-type BotAction = BotInput -> IO ()
+type BotResponse = BotInput -> IO ()

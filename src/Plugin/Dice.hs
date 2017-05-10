@@ -11,12 +11,11 @@ import           Data.Text        (Text)
 import qualified Data.Text        as T
 import           Types
 import           Util
-import           Web.Slack        hiding (lines)
 
 respond :: BotResponse
 respond (evt, resp) = maybe (pure ()) parseCmd (command evt)
   where
-    doRoll c = roll (arguments c) (user evt) resp
+    doRoll c = roll (arguments c) (slackUser $ user evt) resp
     parseCmd cmd = case trigger cmd of
       "roll" -> doRoll cmd
       "dice" -> doRoll cmd
@@ -35,11 +34,12 @@ diceOrDefault :: [Text] -> String
 diceOrDefault [] = "1d6"
 diceOrDefault x  = T.unpack $ T.concat x
 
-roll :: [Text] -> UserId -> OutputResponse -> IO ()
-roll args uid resp = do
-  result <- rollEm $ diceOrDefault args
-  write $ either showErr id result
-  where
-    showErr = concat . intersperse ": " . tail . lines . show
-    prefx = T.concat $ (slackUser uid) : " " : args
-    write str = slackWriter resp $ SimpleMessage $ T.concat [prefx, " ", slackSimpleQuote $ T.pack str]
+diceError :: Show a => a -> String
+diceError = concat . intersperse ": " . tail . lines . show
+
+roll :: [Text] -> Text -> OutputResponse -> IO ()
+roll args username resp = do
+  let diceRequest = diceOrDefault args
+  diceResult <- rollEm diceRequest
+  let diceMessage = (slackSimpleQuote $ T.pack $ either diceError id diceResult)
+  slackWriter resp $ SimpleMessage $ T.concat [username, " ", (slackSimpleQuote $ T.pack diceRequest), " => ", diceMessage]

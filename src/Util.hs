@@ -15,12 +15,20 @@ import           Control.Monad
 import qualified Data.ByteString.Char8  as BSC
 import qualified Data.ByteString.Lazy   as LBS
 import           Data.Maybe
-import           Data.Text
+import           Data.Text              (Text)
+import qualified Data.Text              as T
 import           Network.HTTP.Client
 import           Network.Wreq
 -- import qualified Network.Wreq           as W
 import           System.Environment
 import           Types
+import           Web.Slack
+
+slackUser :: UserId -> Text
+slackUser (Id uid) = T.concat ["<@", uid, ">"]
+
+slackSimpleQuote :: Text -> Text
+slackSimpleQuote txt = T.concat ["`", txt, "`"]
 
 envFail :: String -> IO String
 envFail var = envDefault (error var ++ " not set") var
@@ -46,15 +54,15 @@ envDefault def var = fromMaybe def <$> lookupEnv var
 
 safeGetUrl :: Text -> Maybe Text -> Maybe Text -> IO (Either Text (Response LBS.ByteString))
 safeGetUrl url (Just login) (Just pass) = do
-  let opts = defaults & auth ?~ basicAuth (BSC.pack $ unpack login) (BSC.pack $ unpack pass)
+  let opts = defaults & auth ?~ basicAuth (BSC.pack $ T.unpack login) (BSC.pack $ T.unpack pass)
                       -- & W.checkStatus .~ (Just $ \_ _ _ -> Nothing)
-  (Right <$> getWith opts (unpack url)) `E.catch` handler
+  (Right <$> getWith opts (T.unpack url)) `E.catch` handler
   where
     handler :: HttpException -> IO (Either Text (Response LBS.ByteString))
-    handler _ = pure $ Left $ pack "Error fetching HTTP data."
+    handler _ = pure $ Left $ T.pack "Error fetching HTTP data."
     -- handler (StatusCodeException s _ _) = do
     --   pure $ Left $ BSC.unpack (s ^. statusMessage)
-safeGetUrl _ _ _ = pure $ Left $ pack "Error: Invalid invocation."
+safeGetUrl _ _ _ = pure $ Left $ T.pack "Error: Invalid invocation."
 
 slackWriter :: OutputResponse -> OutputMessage -> IO ()
 slackWriter resp msg = atomically $ writeTChan (outputChannel resp) resp { message = msg }

@@ -57,13 +57,12 @@ instance FromJSON Issue where
   parseJSON _ = mempty
 
 respond :: BotResponse
-respond (evt, resp) = do
-  case command evt of
-    Just cmd -> case trigger cmd of
-      "jira" -> fetchIssues (args cmd) resp
-      "help" -> help (args cmd) resp
+respond (evt, resp) = maybe (pure ()) parseCmd (command evt)
+  where
+    parseCmd cmd = case trigger cmd of
+      "jira" -> fetchIssues (arguments cmd) resp
+      "help" -> help (arguments cmd) resp
       _      -> pure ()
-    Nothing -> pure ()
 
 hear :: BotResponse
 hear (evt, resp) = do
@@ -74,7 +73,7 @@ help args resp = case args of
   []       -> say
   ["jira"] -> say
   _        -> pure ()
-  where say = slackWriter resp $ SimpleMessage "`!jira XYZ-123 [XYZ-234 XYZ-345…] :: Displays Jira entries`"
+  where say = slackWriter resp $ QuotedSimpleMessage "!jira XYZ-123 <XYZ-234 XYZ-345…> :: Displays Jira entries"
 
 isIssueKey :: Text -> Bool
 isIssueKey = isJust . parseMaybe issueKeyParser

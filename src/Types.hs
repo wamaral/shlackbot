@@ -14,9 +14,9 @@ import           Web.Slack              hiding (Event)
 
 data OutputMessage = SimpleMessage Text | QuotedSimpleMessage Text | RichMessage Attachment | NoMessage
 
-data Command = Command { prefix  :: Char
-                       , trigger :: Text
-                       , args    :: [Text]
+data Command = Command { prefix    :: Char
+                       , trigger   :: Text
+                       , arguments :: [Text]
                        } deriving Show
 
 data Event = Event { fullMessage :: Text

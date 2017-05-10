@@ -19,6 +19,7 @@ import           Control.Monad.IO.Class
 import           Data.Maybe             (isJust)
 import qualified Data.Text              as T
 import           Parser                 as P
+import qualified Plugin.Dice            as Dice
 import qualified Plugin.Jira            as Jira
 import           Text.Megaparsec        (parseMaybe)
 import           Types
@@ -27,7 +28,7 @@ import           Web.Slack.Handle       (SlackHandle, withSlackHandle)
 import           Web.Slack.Monad        (monadicToHandled)
 
 pluginHandlers :: [BotResponse]
-pluginHandlers = [ Jira.respond ]
+pluginHandlers = [ Jira.respond, Dice.respond ]
 
 pluginListeners :: [BotResponse]
 pluginListeners = [ Jira.hear ]

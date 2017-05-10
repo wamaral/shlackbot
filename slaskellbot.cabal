@@ -19,6 +19,7 @@ library
   exposed-modules:     Lib
                      , Parser
                      , Plugin.Jira
+                     , Plugin.Dice
                      , Types
                      , Util
   build-depends:       base >= 4.7 && < 5
@@ -27,6 +28,7 @@ library
                      , connection
                      , containers
                      , datetime
+                     , dice
                      , http-client
                      , http-types
                      , lens
